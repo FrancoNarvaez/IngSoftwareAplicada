@@ -1,0 +1,123 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Carrito de Compras</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div *ngIf="cartItems.length === 0 && !loading" class="empty-cart">
+    <ion-icon name="cart-outline" size="large" color="medium"></ion-icon>
+    <ion-text color="medium">
+      <h2>Tu carrito está vacío</h2>
+      <p>Agrega productos para comenzar tu compra</p>
+    </ion-text>
+    <ion-button (click)="goBack()" expand="block" class="ion-margin-top">
+      Ir a productos
+    </ion-button>
+  </div>
+
+  <div *ngIf="cartItems.length > 0">
+    <ion-list>
+      <ion-item *ngFor="let item of cartItems">
+        <ion-thumbnail slot="start">
+          <img 
+            *ngIf="item.product.image" 
+            [src]="'data:' + item.product.imageContentType + ';base64,' + item.product.image"
+            [alt]="item.product.name"
+          />
+          <div *ngIf="!item.product.image" class="no-image-thumb">
+            <ion-text color="medium">?</ion-text>
+          </div>
+        </ion-thumbnail>
+
+        <ion-label>
+          <h2>{{ item.product.name }}</h2>
+          <p>{{ formatPrice(item.product.price) }} c/u</p>
+          <p>
+            <strong>Subtotal: {{ formatPrice(item.product.price * item.quantity) }}</strong>
+          </p>
+        </ion-label>
+
+        <div slot="end" class="quantity-controls">
+          <ion-button 
+            size="small" 
+            fill="clear" 
+            (click)="decreaseQuantity(item)"
+            [disabled]="item.quantity <= 1 || placingOrder"
+          >
+            <ion-icon name="remove-outline"></ion-icon>
+          </ion-button>
+
+          <ion-note>{{ item.quantity }}</ion-note>
+
+          <ion-button 
+            size="small" 
+            fill="clear" 
+            (click)="increaseQuantity(item)"
+            [disabled]="placingOrder"
+          >
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+
+          <ion-button 
+            size="small" 
+            fill="clear" 
+            color="danger" 
+            (click)="removeItem(item)"
+            [disabled]="placingOrder"
+          >
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Resumen del Pedido</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="summary-row">
+          <ion-text>Productos ({{ cartItems.length }})</ion-text>
+          <ion-text>{{ formatPrice(cartTotal) }}</ion-text>
+        </div>
+
+        <div class="summary-row total">
+          <ion-text>
+            <strong>Total</strong>
+          </ion-text>
+          <ion-text color="primary">
+            <strong>{{ formatPrice(cartTotal) }}</strong>
+          </ion-text>
+        </div>
+
+        <ion-button 
+          expand="block" 
+          color="success" 
+          (click)="checkout()"
+          [disabled]="placingOrder"
+          class="ion-margin-top"
+        >
+          <ion-spinner *ngIf="placingOrder" name="crescent"></ion-spinner>
+          <span *ngIf="!placingOrder">Realizar Pedido</span>
+        </ion-button>
+
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          color="danger" 
+          (click)="clearCart()"
+          [disabled]="placingOrder"
+        >
+          Vaciar Carrito
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

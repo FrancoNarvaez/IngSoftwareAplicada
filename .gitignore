@@ -1,0 +1,75 @@
+# Global ignores
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environments
+.env
+.env.*
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node / Ionic
+node_modules/
+ionic-app/node_modules/
+ionic-app/www/
+ionic-app/dist/
+ionic-app/.angular/
+ionic-app/.cache/
+ionic-app/.nyc_output/
+ionic-app/.eslintcache
+ionic-app/.ionic/cache/
+
+# Angular
+.angular/
+dist/
+
+# Capacitor / Native builds
+ios/
+android/
+
+# Java / Maven
+**/target/
+**/.mvn/
+.mvn/
+
+# Cypress
+cypress/screenshots/
+cypress/videos/
+
+# Docker
+**/.docker/
+**/jib-cache/
+
+# JHipster
+**/.jhipster/
+
+# Coverage
+coverage/
+**/test-results/
+
+# Cache
+**/.cache/
+
+# Build artifacts
+**/*.jar
+**/*.war
+**/*.zip
+
+# Misc
+tmp/

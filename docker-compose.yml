@@ -1,0 +1,159 @@
+version: "3.8"
+
+name: ecommerce-stack
+
+services:
+  consul:
+    image: hashicorp/consul:1.15
+    container_name: consul
+    command: consul agent -dev -ui -client=0.0.0.0 -data-dir=/consul/data
+    volumes:
+      - consul-data:/consul/data
+    ports:
+      - "8500:8500"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8500/ui/"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - ecommerce
+  # Databases
+  mysql-store:
+    image: mysql:9.2.0
+    container_name: mysql-store
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=store
+    command: mysqld --lower_case_table_names=1 --skip-mysqlx --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -e 'SHOW DATABASES;' && sleep 5"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - ecommerce
+
+  mysql-invoice:
+    image: mysql:9.2.0
+    container_name: mysql-invoice
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=invoice
+    command: mysqld --lower_case_table_names=1 --skip-mysqlx --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -e 'SHOW DATABASES;' && sleep 5"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - ecommerce
+
+  mongodb-notification:
+    image: mongo:8.0.9
+    container_name: mongodb-notification
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "echo", "db.runCommand('ping').ok", "|", "mongo", "localhost:27017/test", "--quiet"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - ecommerce
+
+  # Applications
+  store:
+    image: store
+    container_name: store
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=dev,api-docs
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - SPRING_DOCKER_COMPOSE_ENABLED=false
+      - SERVER_PORT=8080
+      - SPRING_R2DBC_URL=r2dbc:mysql://mysql-store:3306/store?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+      - SPRING_LIQUIBASE_URL=jdbc:mysql://mysql-store:3306/store?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_CLOUD_CONSUL_DISCOVERY_ENABLED=true
+    ports:
+      - "8080:8080"
+    depends_on:
+      consul:
+        condition: service_healthy
+      mysql-store:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/management/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks:
+      - ecommerce
+
+  invoice:
+    image: invoice
+    container_name: invoice
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=dev,api-docs
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - SPRING_DOCKER_COMPOSE_ENABLED=false
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-invoice:3306/invoice?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+      - SPRING_LIQUIBASE_URL=jdbc:mysql://mysql-invoice:3306/invoice?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_CLOUD_CONSUL_DISCOVERY_ENABLED=true
+    ports:
+      - "8081:8081"
+    depends_on:
+      consul:
+        condition: service_healthy
+      mysql-invoice:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/management/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks:
+      - ecommerce
+
+  notification:
+    image: notification
+    container_name: notification
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=dev,api-docs
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - SPRING_DOCKER_COMPOSE_ENABLED=false
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb-notification:27017/notification
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_CLOUD_CONSUL_DISCOVERY_ENABLED=true
+    ports:
+      - "8082:8082"
+    depends_on:
+      consul:
+        condition: service_healthy
+      mongodb-notification:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/management/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks:
+      - ecommerce
+
+networks:
+  ecommerce:
+    driver: bridge
+volumes:
+  consul-data:
+    driver: local
