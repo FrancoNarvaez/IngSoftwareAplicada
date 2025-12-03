@@ -1,0 +1,34 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 0,
+    "applicationType": "gateway",
+    "applications": {
+      "invoice": {
+        "applicationIndex": 1,
+        "serverPort": "8081"
+      },
+      "notification": {
+        "applicationIndex": 2,
+        "serverPort": "8082"
+      }
+    },
+    "authenticationType": "jwt",
+    "baseName": "store",
+    "buildTool": "maven",
+    "cacheProvider": "no",
+    "clientFramework": "react",
+    "devServerPort": 9060,
+    "entities": ["Product", "ProductCategory", "Customer", "ProductOrder", "OrderItem", "Invoice", "Shipment", "Notification"],
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "YjEzYjA2YWRmZDZjZjg4ZjMzNjg5MGUyZjQ4MDQ2N2QzMmQ3ZTg3ZjgzNWE3MzBjYTIzMjU3MmNlZjQxN2QzNGU5OGRhZTZiNmZkM2Q5ZTZhOTM5YmE0MWViZDcyNGU3MTE3ODhiNDZmMzUzMzI2NjE1OWI1M2IxZWVlMjE4MTQ=",
+    "languages": ["en"],
+    "lastLiquibaseTimestamp": 1764522643000,
+    "nativeLanguage": "en",
+    "packageName": "com.jhipster.demo.store",
+    "prodDatabaseType": "mysql",
+    "reactive": true,
+    "serverPort": 8080,
+    "serviceDiscoveryType": "no",
+    "testFrameworks": ["cypress"]
+  }
+}
