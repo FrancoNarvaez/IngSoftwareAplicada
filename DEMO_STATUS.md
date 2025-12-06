@@ -25,14 +25,17 @@
 ```
 
 ### ✅ Cypress E2E Tests
-**17 de 17 pruebas PASANDO** ✓
+**17 de 17 pruebas API PASANDO** ✓ (Pruebas Directas)
 - Invoice API: 6 tests ✓
 - Notification API: 6 tests ✓
 - Shipment API: 5 tests ✓
 
-**Pruebas que esperan interfaz web** (se ejecutarán cuando esté disponible):
-- Login, Register, Settings
-- Productos, Categorías, Órdenes, etc.
+**Pruebas de UI** (requieren proxy configurado):
+- Login, Register, Settings, Password
+- Productos, Categorías, Órdenes, Clientes, etc.
+- Total: 69 tests adicionales (requieren Ionic + proxy de Angular)
+
+⚠️ **Nota**: Los tests API funcionan perfectamente sin UI. Los tests de UI requieren configurar un proxy en Angular para que las peticiones desde puerto 4200 (Ionic) se redirijan a puerto 8080 (Gateway).
 
 ---
 

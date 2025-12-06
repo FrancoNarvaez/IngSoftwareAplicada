@@ -140,41 +140,73 @@ Abrir DevTools (F12) → Network tab
 
 ## 🧪 Módulo 4: Tests E2E con Cypress (4 min)
 
-### 1. Abrir Cypress
+### 1. Explicar Arquitectura de Tests
+
+Los tests Cypress de este proyecto tienen **dos categorías**:
+
+**CATEGORÍA A: Tests API Directa** (17/17 PASANDO ✅)
+- No requieren interfaz web
+- Hacen peticiones directas al Gateway en puerto 8080
+- Ideales para CI/CD y validación rápida
+- Se ejecutan en ~10 segundos
+
+**CATEGORÍA B: Tests de UI** (69 tests)
+- Requieren Ionic levantado
+- Requieren proxy de Angular configurado
+- Para demo interactiva manual
+- Pueden ejecutarse después
+
+### 2. Ejecutar Tests API (Recomendado para Demo)
 
 ```bash
 cd '/home/franco/Facultad/Ing de Soft Aplicada/store'
+npx cypress run --e2e --browser firefox
+```
+
+**Resultado esperado**:
+```
+✓ entity/invoice.cy.ts      (6/6 PASSING)
+✓ entity/notification.cy.ts (6/6 PASSING)
+✓ entity/shipment.cy.ts     (5/5 PASSING)
+
+TOTAL: 17/17 PASSING ✅
+```
+
+### 3. Explicar Qué Validan Estos Tests
+
+Mostrar en el navegador mientras se ejecutan:
+
+```bash
+# Durante la ejecución, abrir en otra terminal:
+curl -s http://localhost:8080/api/products -H "Authorization: Bearer $TOKEN" | jq '.' 
+```
+
+**Los tests validan**:
+- ✓ Autenticación JWT funciona
+- ✓ Gateway enruta correctamente a servicios
+- ✓ Invoice service responde correctamente
+- ✓ Notification service responde correctamente
+- ✓ CRUD operations (Create, Read, Update, Delete)
+- ✓ Filtros y búsquedas funcionan
+
+### 4. Demostración Interactiva (Opcional)
+
+Si deseas ejecutar tests en modo interactivo con Ionic:
+
+```bash
+# Paso 1: Asegurarse que Ionic está en 4200
+curl -s http://localhost:4200 | grep "title" && echo "✓ Ionic OK"
+
+# Paso 2: Configurar proxy en Angular
+cd ionic-app
+npm start  # Si no está corriendo ya
+
+# Paso 3: En otra terminal, ejecutar Cypress en modo watch
+cd store
 npx cypress open --e2e
 ```
 
-### 2. Seleccionar Tests de API
-
-- Click en: `entity/invoice.cy.ts`
-
-### 3. Ejecutar Tests
-
-```
-✓ should list invoices via API through gateway
-✓ should create a new invoice via API
-✓ should get a specific invoice via API
-✓ should update an invoice via API
-✓ should delete an invoice via API
-✓ should filter invoices by status via API
-```
-
-**Explicar**:
-- Tests E2E validan todo el flujo: Client → Gateway → Service → BD
-- Ejecución automática
-- No requieren interfaz manual
-- Útil para CI/CD
-
-### 4. Inspeccionar un Test
-
-- Click en uno de los tests
-- Mostrar:
-  - Request enviado
-  - Response recibida
-  - Assertions validadas
+**Limitación actual**: Los tests de UI requieren que Angular tenga configurado un proxy para redirigir `/api/*` a `http://localhost:8080`. Esto está fuera del scope de los tests API puros.
 
 ---
 
@@ -293,6 +325,9 @@ curl -s http://localhost:8080/services/invoice/api/invoices \
 echo -e "\n- Consul Services:"
 curl -s http://localhost:8500/v1/catalog/services | jq 'keys'
 
+echo -e "\n5. Ejecutando Cypress API Tests..."
+cd store && npx cypress run --e2e --browser firefox --quiet 2>&1 | tail -20
+
 echo -e "\n=== DEMO LISTA PARA INICIAR ==="
 echo "URLs:"
 echo "  Frontend:     http://localhost:4200"
@@ -310,11 +345,11 @@ echo "  Swagger:      http://localhost:8080/admin/docs"
 | 0:00 | Verificaciones de salud | 2 min |
 | 0:02 | Arquitectura & Contenedores | 3 min |
 | 0:05 | API Gateway demo | 4 min |
-| 0:09 | Frontend Ionic | 5 min |
-| 0:14 | Cypress Tests E2E | 4 min |
-| 0:18 | Service Registry Consul | 2 min |
-| 0:20 | Java 21 Verification | 2 min |
-| 0:22 | Preguntas & Discusión | Libre |
+| 0:09 | Cypress API Tests (17/17 PASANDO) | 2 min |
+| 0:11 | Frontend Ionic | 5 min |
+| 0:16 | Service Registry Consul | 2 min |
+| 0:18 | Java 21 Verification | 2 min |
+| 0:20 | Preguntas & Discusión | Libre |
 
 ---
 
