@@ -2,6 +2,7 @@ package com.jhipster.demo.notification.domain;
 
 import com.jhipster.demo.notification.domain.enumeration.NotificationType;
 import jakarta.validation.constraints.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import org.springframework.data.annotation.Id;
@@ -15,6 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Notification implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
