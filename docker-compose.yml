@@ -1,7 +1,5 @@
 version: "3.8"
 
-name: ecommerce-stack
-
 services:
   consul:
     image: hashicorp/consul:1.15
