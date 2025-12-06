@@ -1,29 +1,0 @@
-Trabajo Final
-Ing. Software Aplicada
-
-Objetivo
-Crear una aplicación donde se apliquen los conceptos
-aprendidos durante el cursado.
-
-Requerimientos
-1- Crear una aplicación en JHipster basado en un modelo de clases jdl
-Podrá tomarse alguno de los siguientes (https://github.com/jhipster/jdl-samples)
-
-2- Crear dos test de unidad
-3- Crear tres test E2E en Cypress
-Algunos de los test deberán hacer el login utilanzo la API y para luego probar alguna
-funcionalidad.
-
-Requerimientos
-4 - Hacer un deploy en docker
-5 - Implementar un servidor de logs (ELK) que tome los logs en docker
-6 - Crear una aplicación progresiva en ionic que consuma una API del proyecto
-JHipster
-7 - Convertir la aplicación Ionic en PWA permitiendo que pueda funcionar sin
-conexión.
-
-Requerimientos
-8 - Implementar un servidor de integración contínua (Jenkins) que lea el
-repositorio y genere una imagen docker de la aplicación (Dockerhub)
-
-
