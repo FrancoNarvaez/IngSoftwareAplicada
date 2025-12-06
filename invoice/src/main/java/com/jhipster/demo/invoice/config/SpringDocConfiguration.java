@@ -13,7 +13,7 @@ public class SpringDocConfiguration {
         return (serverBaseUrl, request) -> {
             List<String> forwardedPrefix = request.getHeaders().get("X-Forwarded-Prefix");
             if (forwardedPrefix != null && forwardedPrefix.size() > 0) {
-                return forwardedPrefix.get(0);
+                return forwardedPrefix.getFirst();
             }
             return serverBaseUrl;
         };

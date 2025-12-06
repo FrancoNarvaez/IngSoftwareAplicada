@@ -5,6 +5,7 @@ import com.jhipster.demo.invoice.domain.enumeration.InvoiceStatus;
 import com.jhipster.demo.invoice.domain.enumeration.PaymentMethod;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,6 +23,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Invoice implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
