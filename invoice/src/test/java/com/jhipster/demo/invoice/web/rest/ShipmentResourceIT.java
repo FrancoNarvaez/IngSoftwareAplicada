@@ -96,7 +96,7 @@ class ShipmentResourceIT {
             em.persist(invoice);
             em.flush();
         } else {
-            invoice = TestUtil.findAll(em, Invoice.class).getFirst();
+                invoice = TestUtil.findAll(em, Invoice.class).get(0);
         }
         shipment.setInvoice(invoice);
         return shipment;
@@ -117,7 +117,7 @@ class ShipmentResourceIT {
             em.persist(invoice);
             em.flush();
         } else {
-            invoice = TestUtil.findAll(em, Invoice.class).getFirst();
+            invoice = TestUtil.findAll(em, Invoice.class).get(0);
         }
         updatedShipment.setInvoice(invoice);
         return updatedShipment;
