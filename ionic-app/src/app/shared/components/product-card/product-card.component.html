@@ -1,0 +1,88 @@
+<ion-card class="product-card" [class.out-of-stock]="!product.inStock">
+  <!-- Imagen del producto -->
+  <div class="product-image-container">
+    <ion-img
+      [src]="product.image"
+      alt="{{ product.name }}"
+      class="product-image"
+    ></ion-img>
+
+    <!-- Badge de descuento -->
+    <ion-badge *ngIf="product.discount" class="discount-badge" color="danger">
+      -{{ product.discount }}%
+    </ion-badge>
+
+    <!-- Botón favoritos -->
+    <button
+      class="favorite-btn"
+      [class.active]="isFavorite"
+      (click)="toggleFavorite()"
+      type="button"
+    >
+      <ion-icon [name]="isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
+    </button>
+
+    <!-- Overlay out of stock -->
+    <div *ngIf="!product.inStock" class="out-of-stock-overlay">
+      <span>Sin Stock</span>
+    </div>
+  </div>
+
+  <ion-card-content class="product-content">
+    <!-- Categoría y rating -->
+    <div class="product-meta">
+      <span class="category">{{ product.category }}</span>
+      <div class="rating">
+        <ion-icon
+          *ngFor="let _ of starArray"
+          name="star"
+          color="warning"
+          class="star-icon"
+        ></ion-icon>
+        <span class="rating-count">({{ product.reviewCount }})</span>
+      </div>
+    </div>
+
+    <!-- Nombre del producto -->
+    <h3 class="product-name">{{ product.name }}</h3>
+
+    <!-- Descripción -->
+    <p class="product-description">{{ product.description | slice: 0:80 }}...</p>
+
+    <!-- Precios -->
+    <div class="product-prices">
+      <span class="current-price">${{ discountedPrice | number: '1.2-2' }}</span>
+      <span *ngIf="product.originalPrice" class="original-price">
+        ${{ product.originalPrice | number: '1.2-2' }}
+      </span>
+    </div>
+
+    <!-- Tags -->
+    <div class="product-tags" *ngIf="product.tags && product.tags.length">
+      <span *ngFor="let tag of product.tags.slice(0, 2)" class="tag">
+        {{ tag }}
+      </span>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="product-actions">
+      <ion-button
+        expand="block"
+        (click)="onAddToCart()"
+        [disabled]="!product.inStock"
+        class="add-to-cart-btn"
+      >
+        <ion-icon slot="start" name="cart-outline"></ion-icon>
+        Agregar
+      </ion-button>
+      <ion-button
+        fill="outline"
+        expand="block"
+        (click)="onViewDetails()"
+        class="details-btn"
+      >
+        Ver más
+      </ion-button>
+    </div>
+  </ion-card-content>
+</ion-card>
