@@ -54,13 +54,20 @@ export interface Customer {
   country: string;
   userId?: number;
   userLogin?: string;
+  user?: {
+    id: number;
+    login: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly API_URL = environment.apiUrl;
+  private readonly API_URL = 'http://localhost:8080';
 
   constructor(private http: HttpClient) {}
 

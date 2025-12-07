@@ -6,6 +6,11 @@ import { AuthService } from '../services/auth.service';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
+  // No agregar token para la petición de login
+  if (req.url.includes('/api/authenticate')) {
+    return next(req);
+  }
+
   // Convertir la promesa del token en un observable
   return from(authService.getToken()).pipe(
     switchMap(token => {

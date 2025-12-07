@@ -198,19 +198,27 @@ export class CartPage implements OnInit {
 
       // Buscar el customer asociado al usuario
       const customers = await this.apiService.getCustomers().toPromise();
-      let customerId = customers?.find(c => c.userLogin === user.login)?.id;
+      // Buscar por userId o por user.login (el backend devuelve el objeto user anidado)
+      let customerId = customers?.find(c => c.userId === user.id || c.user?.login === user.login)?.id;
 
       // Si no existe, crear el customer
       if (!customerId) {
+        // Ajustar email para cumplir con validación del backend (requiere dominio con punto)
+        let email = user.email;
+        if (email === 'admin@localhost' || email === 'user@localhost') {
+          email = email.replace('@localhost', '@localhost.com');
+        }
+        
         const newCustomer = await this.apiService.createCustomer({
           firstName: user.firstName || 'Usuario',
           lastName: user.lastName || 'App',
-          email: user.email,
+          email: email,
           phone: '0000000000',
           addressLine1: 'Dirección no especificada',
           city: 'Ciudad',
           country: 'Argentina',
-          gender: 'OTHER'
+          gender: 'OTHER',
+          userId: user.id
         }).toPromise();
         customerId = newCustomer?.id;
       }

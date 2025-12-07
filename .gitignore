@@ -14,6 +14,9 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+local.log
+stryker.log
+/tmp/*.log
 
 # Environments
 .env
@@ -51,6 +54,9 @@ android/
 # Cypress
 cypress/screenshots/
 cypress/videos/
+**/cypress/screenshots/
+**/cypress/videos/
+store/target/cypress/
 
 # Docker
 **/.docker/
@@ -73,3 +79,12 @@ coverage/
 
 # Misc
 tmp/
+*.tmp
+*~
+
+# Test files temporales
+test-login.html
+**/test-login.html
+
+# Proxy configs (usando conexión directa)
+ionic-app/proxy.conf.json

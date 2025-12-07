@@ -29,7 +29,7 @@ export interface Account {
 })
 export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
-  private readonly API_URL = environment.apiUrl;
+  private readonly API_URL = 'http://localhost:8080'; // ← DIRECTO AL BACKEND
   
   private currentUserSubject = new BehaviorSubject<Account | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -64,7 +64,15 @@ export class AuthService {
    * Realiza login y almacena el token JWT
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/api/authenticate`, credentials).pipe(
+    const url = `${this.API_URL}/api/authenticate`;
+    
+    // Crear headers manualmente para evitar problemas con el interceptor
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+    
+    return this.http.post<LoginResponse>(url, credentials, { headers }).pipe(
       tap(async (response) => {
         if (response.id_token) {
           await Preferences.set({

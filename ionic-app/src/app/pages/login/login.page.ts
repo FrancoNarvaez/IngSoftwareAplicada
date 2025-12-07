@@ -86,7 +86,6 @@ export class LoginPage implements OnInit {
       },
       error: async (error) => {
         this.loading = false;
-        console.error('Login error:', error);
         
         let message = 'Error al iniciar sesión';
         if (error.status === 401) {
