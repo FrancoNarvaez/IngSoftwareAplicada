@@ -3,7 +3,7 @@
  * Categoría: Electrónica y Tecnología
  */
 
-import { Product, Category } from './index';
+import { Product, Category } from '../models/index';
 
 // ==================== CATEGORÍAS ====================
 export const PRODUCT_CATEGORIES: Category[] = [
@@ -313,7 +313,7 @@ export const MOCK_PRODUCTS: Product[] = [
       'Sensor': '8K DPI',
       'Batería': '70 días',
       'Conectividad': 'USB + Bluetooth',
-      'Botones': 8 programables,
+      'Botones': '8 programables',
       'Ergonomía': 'Profesional'
     },
     rating: 4.9,

@@ -80,7 +80,7 @@ export class ProductService {
     const results = MOCK_PRODUCTS.filter(p =>
       p.name.toLowerCase().includes(lowerQuery) ||
       p.description.toLowerCase().includes(lowerQuery) ||
-      p.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+      p.tags?.some((tag: string) => tag.toLowerCase().includes(lowerQuery))
     );
     return of(results).pipe(delay(300));
   }
