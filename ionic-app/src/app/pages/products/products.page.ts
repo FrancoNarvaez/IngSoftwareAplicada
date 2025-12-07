@@ -1,150 +1,136 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButtons,
-  IonButton,
-  IonIcon,
-  IonBadge,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardSubtitle,
-  IonCardContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonSpinner,
-  IonText,
-  IonFab,
-  IonFabButton,
-  IonRefresher,
-  IonRefresherContent,
-  ToastController
-} from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonToolbar, IonTitle, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons } from '@ionic/angular/standalone';
+import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
+import { ProductService } from '../../services/product.service';
+import { Product } from '../../shared/models';
+import { ActivatedRoute } from '@angular/router';
+import { gridOutline, listOutline, logOutOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
-import { cartOutline, logOutOutline, addOutline, checkmarkOutline } from 'ionicons/icons';
-import { ApiService, Product } from '../../services/api.service';
-import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-products',
-  templateUrl: './products.page.html',
-  styleUrls: ['./products.page.scss'],
   standalone: true,
   imports: [
     CommonModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonBadge,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonCardContent,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonSpinner,
-    IonText,
-    IonFab,
-    IonFabButton,
-    IonRefresher,
-    IonRefresherContent
-  ]
+    IonContent, IonHeader, IonToolbar, IonTitle, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons,
+    ProductCardComponent
+  ],
+  templateUrl: './products.page.html',
+  styleUrls: ['./products.page.scss']
 })
 export class ProductsPage implements OnInit {
   products: Product[] = [];
-  loading: boolean = true;
-  cartCount: number = 0;
+  filteredProducts: Product[] = [];
+  loading = true;
+  selectedCategoryId: number | null = null;
+  currentPage = 1;
+  pageSize = 12;
+  viewMode: 'grid' | 'list' = 'grid';
+  Math = Math; // Para usar en template
+  
+  // Iconos para template
+  gridOutline = gridOutline;
+  listOutline = listOutline;
+  logOutOutline = logOutOutline;
 
   constructor(
-    private apiService: ApiService,
-    private cartService: CartService,
+    private productService: ProductService,
+    private route: ActivatedRoute,
     private authService: AuthService,
-    private router: Router,
-    private toastController: ToastController
+    private router: Router
   ) {
-    // Registrar iconos
-    addIcons({ cartOutline, logOutOutline, addOutline, checkmarkOutline });
+    addIcons({ gridOutline, listOutline, logOutOutline });
   }
 
   ngOnInit() {
     this.loadProducts();
-    
-    // Suscribirse al contador del carrito
-    this.cartService.cartCount$.subscribe(count => {
-      this.cartCount = count;
-    });
-  }
-
-  loadProducts(event?: any) {
-    this.loading = !event; // No mostrar spinner si es refresh
-
-    this.apiService.getProducts().subscribe({
-      next: (products) => {
-        this.products = products;
-        this.loading = false;
-        if (event) {
-          event.target.complete();
-        }
-      },
-      error: async (error) => {
-        console.error('Error al cargar productos:', error);
-        this.loading = false;
-        if (event) {
-          event.target.complete();
-        }
-        
-        await this.showToast('Error al cargar productos', 'danger');
+    this.route.queryParams.subscribe(params => {
+      if (params['category']) {
+        this.selectedCategoryId = parseInt(params['category']);
+        this.filterByCategory(this.selectedCategoryId);
       }
     });
   }
 
-  async addToCart(product: Product) {
-    await this.cartService.addToCart(product, 1);
-    await this.showToast(`${product.name} agregado al carrito`, 'success');
+  loadProducts() {
+    this.productService.getAllProducts().subscribe({
+      next: (data) => {
+        this.products = data;
+        this.filteredProducts = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
   }
 
-  isInCart(productId: number | undefined): boolean {
-    if (!productId) return false;
-    return this.cartService.isInCart(productId);
+  filterByCategory(categoryId: number) {
+    this.selectedCategoryId = categoryId;
+    this.filteredProducts = this.products.filter(p => {
+      const productCategory = this.getProductCategory(p.id);
+      return productCategory === categoryId;
+    });
+    this.currentPage = 1;
   }
 
-  goToCart() {
-    this.router.navigate(['/cart']);
+  getProductCategory(productId: number): number {
+    const categoryMap: { [key: number]: number } = {
+      1: 1, 2: 1, 3: 1, 4: 1,    // Laptops
+      5: 2, 6: 2, 7: 2, 8: 2,    // Phones
+      9: 3, 10: 3, 11: 3,        // Accessories
+      12: 4, 13: 4,              // Peripherals
+      14: 5, 15: 5               // Monitors
+    };
+    return categoryMap[productId] || 1;
+  }
+
+  clearFilter() {
+    this.selectedCategoryId = null;
+    this.filteredProducts = this.products;
+    this.currentPage = 1;
+  }
+
+  get paginatedProducts(): Product[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredProducts.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredProducts.length / this.pageSize);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      window.scrollTo(0, 0);
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      window.scrollTo(0, 0);
+    }
+  }
+
+  toggleViewMode() {
+    this.viewMode = this.viewMode === 'grid' ? 'list' : 'grid';
+  }
+
+  onAddToCart(product: Product) {
+    console.log('Producto agregado al carrito:', product.name);
+  }
+
+  onViewDetails(product: Product) {
+    console.log('Ver detalles de:', product.name);
   }
 
   async logout() {
     await this.authService.logout();
-    await this.showToast('Sesión cerrada', 'success');
     this.router.navigate(['/login']);
-  }
-
-  private async showToast(message: string, color: 'success' | 'danger' | 'warning') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'bottom',
-      color
-    });
-    await toast.present();
-  }
-
-  formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS'
-    }).format(price);
   }
 }
