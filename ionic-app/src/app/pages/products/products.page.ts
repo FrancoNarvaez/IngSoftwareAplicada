@@ -1,21 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonToolbar, IonTitle, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonToolbar, IonTitle, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons, IonBadge } from '@ionic/angular/standalone';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../shared/models';
-import { ActivatedRoute } from '@angular/router';
-import { gridOutline, listOutline, logOutOutline } from 'ionicons/icons';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { gridOutline, listOutline, logOutOutline, cartOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-products',
   standalone: true,
   imports: [
     CommonModule,
-    IonContent, IonHeader, IonToolbar, IonTitle, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons,
+    RouterLink,
+    IonContent, IonHeader, IonToolbar, IonTitle, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons, IonBadge,
     ProductCardComponent
   ],
   templateUrl: './products.page.html',
@@ -30,6 +33,7 @@ export class ProductsPage implements OnInit {
   pageSize = 12;
   viewMode: 'grid' | 'list' = 'grid';
   Math = Math; // Para usar en template
+  cartCount$: Observable<number>;
   
   // Iconos para template
   gridOutline = gridOutline;
@@ -40,9 +44,11 @@ export class ProductsPage implements OnInit {
     private productService: ProductService,
     private route: ActivatedRoute,
     private authService: AuthService,
+    private cartService: CartService,
     private router: Router
   ) {
-    addIcons({ gridOutline, listOutline, logOutOutline });
+    addIcons({ gridOutline, listOutline, logOutOutline, cartOutline });
+    this.cartCount$ = this.cartService.cartCount$;
   }
 
   ngOnInit() {
@@ -122,7 +128,7 @@ export class ProductsPage implements OnInit {
   }
 
   onAddToCart(product: Product) {
-    console.log('Producto agregado al carrito:', product.name);
+    this.cartService.addToCart(product);
   }
 
   onViewDetails(product: Product) {

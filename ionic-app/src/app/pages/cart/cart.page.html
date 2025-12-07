@@ -449,7 +449,7 @@
 
         <ion-card-content>
           <ion-list class="confirmation-items">
-            <ion-item *ngFor="let item of confirmationData?.items" class="confirmation-item">
+            <ion-item *ngFor="let item of confirmedItems" class="confirmation-item">
               <ion-thumbnail slot="start" class="confirmation-thumb">
                 <img 
                   *ngIf="item.product.image" 

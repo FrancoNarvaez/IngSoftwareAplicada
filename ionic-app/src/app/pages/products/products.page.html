@@ -2,6 +2,12 @@
   <ion-toolbar color="primary">
     <ion-title>Productos</ion-title>
     <ion-buttons slot="end">
+      <ion-button routerLink="/cart" style="overflow: visible;">
+        <ion-icon slot="icon-only" name="cart-outline"></ion-icon>
+        <ion-badge *ngIf="(cartCount$ | async)! > 0" color="danger" style="position: absolute; top: -5px; right: -5px; font-size: 0.6rem; z-index: 10; border-radius: 50%; padding: 3px 5px;">
+          {{ cartCount$ | async }}
+        </ion-badge>
+      </ion-button>
       <ion-button (click)="toggleViewMode()">
         <ion-icon [icon]="viewMode === 'grid' ? listOutline : gridOutline"></ion-icon>
       </ion-button>

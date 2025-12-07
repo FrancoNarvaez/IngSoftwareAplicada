@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -76,6 +76,7 @@ export class CartPage implements OnInit {
 
   // Checkout states
   checkoutStep: 'cart' | 'shipping' | 'payment' | 'confirmation' = 'cart';
+  confirmedItems: CartItem[] = []; // Propiedad dedicada para la vista de confirmación
   shippingData = {
     firstName: '',
     lastName: '',
@@ -110,7 +111,8 @@ export class CartPage implements OnInit {
     private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private cdr: ChangeDetectorRef
   ) {
     // Registrar iconos
     addIcons({ 
@@ -240,7 +242,7 @@ export class CartPage implements OnInit {
     if (!this.validatePaymentData()) {
       return;
     }
-    this.checkoutStep = 'confirmation';
+    await this.finalizeOrder();
   }
 
   selectShippingMethod(method: any) {
@@ -296,6 +298,20 @@ export class CartPage implements OnInit {
 
   async finalizeOrder() {
     this.placingOrder = true;
+    
+    // Capturar estado actual del carrito directamente de la propiedad del componente
+    // Esto asegura que usamos exactamente lo que el usuario está viendo
+    const currentItems = JSON.parse(JSON.stringify(this.cartItems));
+    const currentTotal = this.cartTotal;
+    const currentShippingCost = this.shippingCost;
+
+    console.log('Iniciando finalizar compra. Items:', currentItems.length);
+
+    if (currentItems.length === 0) {
+      this.showToast('El carrito está vacío', 'warning');
+      this.placingOrder = false;
+      return;
+    }
 
     try {
       const user = this.authService.getCurrentUser();
@@ -343,7 +359,7 @@ export class CartPage implements OnInit {
         throw new Error('No se pudo crear la orden');
       }
 
-      for (const item of this.cartItems) {
+      for (const item of currentItems) {
         if (item.product.id) {
           const orderItem: OrderItem = {
             quantity: item.quantity,
@@ -357,22 +373,29 @@ export class CartPage implements OnInit {
         }
       }
 
-      // Guardar datos de confirmación
+      // Guardar datos de confirmación usando los datos capturados
+      this.confirmedItems = [...currentItems]; // Guardar en propiedad dedicada
+
       this.confirmationData = {
         orderId: createdOrder.id,
         orderCode: createdOrder.code,
         date: new Date(),
-        shippingData: this.shippingData,
-        shippingMethod: this.selectedShipping,
-        items: this.cartItems,
-        subtotal: this.cartTotal,
-        shippingCost: this.shippingCost,
-        total: this.cartTotal + this.shippingCost
+        shippingData: { ...this.shippingData },
+        shippingMethod: { ...this.selectedShipping },
+        items: this.confirmedItems,
+        subtotal: currentTotal,
+        shippingCost: currentShippingCost,
+        total: currentTotal + currentShippingCost
       };
 
+      console.log('Datos de confirmación establecidos. Items:', this.confirmedItems.length);
+
       await this.cartService.clearCart();
+      console.log('Carrito limpiado');
+      
       this.placingOrder = false;
       this.checkoutStep = 'confirmation';
+      this.cdr.detectChanges(); // Force update view
 
     } catch (error) {
       console.error('Error al realizar pedido:', error);

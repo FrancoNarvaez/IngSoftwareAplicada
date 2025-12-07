@@ -1,6 +1,22 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Tienda Tech</ion-title>
+    <ion-buttons slot="end">
+      <ng-container *ngIf="isAuthenticated$ | async; else loginButton">
+        <ion-button routerLink="/cart" class="cart-button" style="overflow: visible;">
+          <ion-icon slot="icon-only" name="cart-outline"></ion-icon>
+          <ion-badge *ngIf="(cartCount$ | async)! > 0" color="danger" style="position: absolute; top: -5px; right: -5px; font-size: 0.6rem; z-index: 10; border-radius: 50%; padding: 3px 5px;">
+            {{ cartCount$ | async }}
+          </ion-badge>
+        </ion-button>
+      </ng-container>
+      <ng-template #loginButton>
+        <ion-button routerLink="/login">
+          <ion-icon slot="start" name="log-in-outline"></ion-icon>
+          Iniciar Sesión
+        </ion-button>
+      </ng-template>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
