@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Tienda Tech</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Hero Section -->
+  <app-hero-section
+    title="Bienvenido a Tienda Tech"
+    subtitle="Descubre las mejores tecnologías del mercado"
+    [promotion]="{ badge: 'Flash Sale', discount: 25 }"
+    [cta]="{ text: 'Explorar Productos', route: '/products' }">
+  </app-hero-section>
+
+  <!-- Category Carousel -->
+  <app-category-carousel></app-category-carousel>
+
+  <!-- Trending Products -->
+  <app-trending-products></app-trending-products>
+
+  <!-- Newsletter Signup -->
+  <app-newsletter-signup></app-newsletter-signup>
+</ion-content>

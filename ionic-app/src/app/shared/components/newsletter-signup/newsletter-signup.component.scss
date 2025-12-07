@@ -1,0 +1,146 @@
+// ==================== NEWSLETTER SIGNUP STYLES ====================
+
+.newsletter-section {
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
+  color: white;
+  text-align: center;
+
+  @media (max-width: 576px) {
+    padding: 40px 16px;
+  }
+}
+
+// Contenedor del newsletter
+.newsletter-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// Contenido del newsletter
+.newsletter-content {
+  h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    @media (max-width: 576px) {
+      font-size: 24px;
+    }
+  }
+
+  > p {
+    font-size: 16px;
+    margin: 0 0 32px;
+    opacity: 0.95;
+    line-height: 1.5;
+
+    @media (max-width: 576px) {
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+  }
+}
+
+// Formulario del newsletter
+.newsletter-form {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Grupo de formulario
+.form-group {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+// Input de email
+.email-input {
+  --background: white;
+  --color: #1a1a1a;
+  --placeholder-color: #999;
+  flex: 1;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+// Botón de suscripción
+.subscribe-button {
+  --background: #ff6b35;
+  --color: white;
+  --padding-start: 32px;
+  --padding-end: 32px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+
+  &:hover:not([disabled]) {
+    --background: #ff5520;
+    box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  ion-icon {
+    margin-right: 4px;
+  }
+}
+
+// Nota de formulario
+.form-note {
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 0;
+}
+
+// Mensaje de éxito
+.success-message {
+  animation: scaleIn 0.5s ease-out;
+
+  p {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #c8e6c9;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

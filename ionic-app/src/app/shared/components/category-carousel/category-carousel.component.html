@@ -1,0 +1,29 @@
+<div class="category-carousel">
+  <div class="section-header">
+    <h2>Categorías</h2>
+    <p>Explora nuestras principales categorías de productos</p>
+  </div>
+
+  <ion-grid *ngIf="!loading" fixed>
+    <ion-row>
+      <ion-col size="12" sizeSm="6" sizeMd="4" sizeLg="2.4" *ngFor="let category of categories" class="category-item">
+        <ion-card class="category-card" [routerLink]="['/products']" [queryParams]="{ category: category.id }">
+          <ion-card-content>
+            <div class="category-icon">{{ getCategoryIcon(category.id) }}</div>
+            <h3 class="category-name">{{ category.name }}</h3>
+            <p class="category-description">{{ category.description }}</p>
+            <p class="category-count">{{ getProductCount(category.id) }} productos</p>
+            <ion-button fill="clear" size="small" class="category-link">
+              Ver más
+              <ion-icon slot="end" icon="arrowForward"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <div *ngIf="loading" class="skeleton-loader">
+    <ion-skeleton-text animated></ion-skeleton-text>
+  </div>
+</div>

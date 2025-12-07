@@ -1,0 +1,28 @@
+// ==================== HOME PAGE STYLES ====================
+
+ion-header {
+  --background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
+  --color: white;
+}
+
+ion-content {
+  --background: #f8f9fa;
+}
+
+// Scrollbar personalizado
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0066cc;
+  border-radius: 4px;
+
+  &:hover {
+    background: #004a99;
+  }
+}

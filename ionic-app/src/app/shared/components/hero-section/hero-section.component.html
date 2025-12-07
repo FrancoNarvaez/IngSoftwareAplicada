@@ -1,0 +1,22 @@
+<div class="hero-section" [style.backgroundImage]="'url(' + backgroundImage + ')'">
+  <div class="hero-overlay"></div>
+  
+  <div class="hero-content">
+    <ion-badge class="promo-badge" color="danger">{{ promotion.badge }}</ion-badge>
+    
+    <h1 class="hero-title">{{ title }}</h1>
+    <p class="hero-subtitle">{{ subtitle }}</p>
+    
+    <div class="promo-highlight">
+      <span class="discount-text">Hasta <strong>{{ promotion.discount }}%</strong> de descuento</span>
+    </div>
+    
+    <button 
+      ion-button 
+      shape="round" 
+      class="cta-button"
+      [routerLink]="cta.route">
+      {{ cta.text }}
+    </button>
+  </div>
+</div>

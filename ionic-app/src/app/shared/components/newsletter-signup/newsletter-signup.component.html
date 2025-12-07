@@ -1,0 +1,37 @@
+<div class="newsletter-section">
+  <div class="newsletter-container">
+    <div class="newsletter-content">
+      <h2>Suscríbete a Nuestro Newsletter</h2>
+      <p>Recibe las últimas promociones, lanzamientos de productos y ofertas exclusivas</p>
+      
+      <div class="newsletter-form" *ngIf="!subscribed">
+        <div class="form-group">
+          <ion-input
+            #emailInput
+            type="email"
+            placeholder="tu@email.com"
+            [(ngModel)]="email"
+            (keypress)="onKeyPress($event)"
+            clearInput="true"
+            class="email-input">
+          </ion-input>
+          
+          <button 
+            ion-button 
+            shape="round"
+            [disabled]="loading || !email"
+            (click)="onSubscribe()"
+            class="subscribe-button">
+            <ion-icon slot="start" icon="sendSharp"></ion-icon>
+            {{ loading ? 'Suscribiendo...' : 'Suscribirse' }}
+          </button>
+        </div>
+        <p class="form-note">No compartimos tu email. Puedes desuscribirse en cualquier momento.</p>
+      </div>
+
+      <div class="success-message" *ngIf="subscribed">
+        <p>✅ ¡Gracias por suscribirte! Revisa tu email para confirmar.</p>
+      </div>
+    </div>
+  </div>
+</div>
