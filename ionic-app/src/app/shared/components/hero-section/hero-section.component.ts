@@ -1,12 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonButton, IonBadge, IonText } from '@ionic/angular/standalone';
+import { IonBadge } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-hero-section',
   standalone: true,
-  imports: [CommonModule, IonButton, IonBadge, IonText, RouterLink],
+  imports: [CommonModule, IonBadge, RouterLink],
   templateUrl: './hero-section.component.html',
   styleUrls: ['./hero-section.component.scss']
 })

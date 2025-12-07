@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonButton, IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
+import { IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
 import { ProductCardComponent } from '../product-card/product-card.component';
 import { ProductService } from '../../../services/product.service';
 import { Product } from '../../models';
@@ -12,7 +12,7 @@ import { RouterLink } from '@angular/router';
   imports: [
     CommonModule,
     ProductCardComponent,
-    IonButton, IonGrid, IonRow, IonCol,
+    IonGrid, IonRow, IonCol,
     RouterLink
   ],
   templateUrl: './trending-products.component.html',

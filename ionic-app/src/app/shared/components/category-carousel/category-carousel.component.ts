@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonCard, IonCardContent, IonButton, IonBadge, IonIcon, IonGrid, IonRow, IonCol, IonSkeletonText } from '@ionic/angular/standalone';
+import { IonCard, IonCardContent, IonButton, IonIcon, IonGrid, IonRow, IonCol, IonSkeletonText } from '@ionic/angular/standalone';
 import { ProductService } from '../../../services/product.service';
 import { Category } from '../../models';
 import { RouterLink } from '@angular/router';
@@ -12,7 +12,7 @@ import { addIcons } from 'ionicons';
   standalone: true,
   imports: [
     CommonModule,
-    IonCard, IonCardContent, IonButton, IonBadge, IonIcon, IonGrid, IonRow, IonCol, IonSkeletonText,
+    IonCard, IonCardContent, IonButton, IonIcon, IonGrid, IonRow, IonCol, IonSkeletonText,
     RouterLink
   ],
   templateUrl: './category-carousel.component.html',

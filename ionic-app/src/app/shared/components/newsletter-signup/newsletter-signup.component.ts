@@ -1,14 +1,14 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonButton, IonInput, IonIcon } from '@ionic/angular/standalone';
+import { IonInput, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { sendSharp } from 'ionicons/icons';
 
 @Component({
   selector: 'app-newsletter-signup',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonButton, IonInput, IonIcon],
+  imports: [CommonModule, FormsModule, IonInput, IonIcon],
   templateUrl: './newsletter-signup.component.html',
   styleUrls: ['./newsletter-signup.component.scss']
 })
