@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonHeader,
@@ -13,13 +14,13 @@ import {
   IonItem,
   IonLabel,
   IonThumbnail,
-  IonNote,
   IonText,
   IonCard,
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonSpinner,
+  IonInput,
+  IonProgressBar,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -29,7 +30,11 @@ import {
   trashOutline, 
   addOutline, 
   removeOutline, 
-  cartOutline 
+  cartOutline,
+  checkmarkCircleOutline,
+  homeOutline,
+  cardOutline,
+  checkmarkOutline
 } from 'ionicons/icons';
 import { CartService, CartItem } from '../../services/cart.service';
 import { ApiService, ProductOrder, OrderItem } from '../../services/api.service';
@@ -42,6 +47,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -53,13 +59,13 @@ import { AuthService } from '../../services/auth.service';
     IonItem,
     IonLabel,
     IonThumbnail,
-    IonNote,
     IonText,
     IonCard,
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
-    IonSpinner
+    IonInput,
+    IonProgressBar
   ]
 })
 export class CartPage implements OnInit {
@@ -67,6 +73,36 @@ export class CartPage implements OnInit {
   cartTotal: number = 0;
   loading: boolean = false;
   placingOrder: boolean = false;
+
+  // Checkout states
+  checkoutStep: 'cart' | 'shipping' | 'payment' | 'confirmation' = 'cart';
+  shippingData = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    addressLine1: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: 'Argentina'
+  };
+
+  paymentData = {
+    cardHolder: '',
+    cardNumber: '',
+    expiryDate: '',
+    cvv: ''
+  };
+
+  shippingMethods = [
+    { id: 'standard', name: 'Envío Estándar (5-7 días)', cost: 0, selected: true },
+    { id: 'express', name: 'Envío Express (2-3 días)', cost: 299, selected: false }
+  ];
+  selectedShipping = this.shippingMethods[0];
+  shippingCost: number = 0;
+
+  confirmationData: any = null;
 
   constructor(
     private cartService: CartService,
@@ -82,12 +118,17 @@ export class CartPage implements OnInit {
       trashOutline, 
       addOutline, 
       removeOutline, 
-      cartOutline 
+      cartOutline,
+      checkmarkCircleOutline,
+      homeOutline,
+      cardOutline,
+      checkmarkOutline
     });
   }
 
   ngOnInit() {
     this.loadCart();
+    this.loadUserData();
   }
 
   loadCart() {
@@ -98,6 +139,15 @@ export class CartPage implements OnInit {
     this.cartService.cartTotal$.subscribe(total => {
       this.cartTotal = total;
     });
+  }
+
+  loadUserData() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.shippingData.firstName = user.firstName || '';
+      this.shippingData.lastName = user.lastName || '';
+      this.shippingData.email = user.email || '';
+    }
   }
 
   async increaseQuantity(item: CartItem) {
@@ -160,63 +210,116 @@ export class CartPage implements OnInit {
     await alert.present();
   }
 
-  async checkout() {
+  // Checkout flow methods
+  async proceedToCheckout() {
     if (this.cartItems.length === 0) {
       await this.showToast('El carrito está vacío', 'warning');
       return;
     }
-
-    const alert = await this.alertController.create({
-      header: 'Confirmar Pedido',
-      message: `¿Realizar pedido por ${this.formatPrice(this.cartTotal)}?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Confirmar',
-          handler: () => {
-            this.placeOrder();
-          }
-        }
-      ]
-    });
-
-    await alert.present();
+    this.checkoutStep = 'shipping';
   }
 
-  private async placeOrder() {
+  goToPreviousStep() {
+    if (this.checkoutStep === 'shipping') {
+      this.checkoutStep = 'cart';
+    } else if (this.checkoutStep === 'payment') {
+      this.checkoutStep = 'shipping';
+    } else if (this.checkoutStep === 'confirmation') {
+      this.checkoutStep = 'payment';
+    }
+  }
+
+  async proceedToPayment() {
+    if (!this.validateShippingData()) {
+      return;
+    }
+    this.checkoutStep = 'payment';
+  }
+
+  async proceedToConfirmation() {
+    if (!this.validatePaymentData()) {
+      return;
+    }
+    this.checkoutStep = 'confirmation';
+  }
+
+  selectShippingMethod(method: any) {
+    this.shippingMethods.forEach(m => m.selected = false);
+    method.selected = true;
+    this.selectedShipping = method;
+    this.shippingCost = method.cost;
+  }
+
+  private validateShippingData(): boolean {
+    if (!this.shippingData.firstName?.trim()) {
+      this.showToast('Por favor ingresa tu nombre', 'warning');
+      return false;
+    }
+    if (!this.shippingData.lastName?.trim()) {
+      this.showToast('Por favor ingresa tu apellido', 'warning');
+      return false;
+    }
+    if (!this.shippingData.email?.trim()) {
+      this.showToast('Por favor ingresa tu email', 'warning');
+      return false;
+    }
+    if (!this.shippingData.addressLine1?.trim()) {
+      this.showToast('Por favor ingresa tu dirección', 'warning');
+      return false;
+    }
+    if (!this.shippingData.city?.trim()) {
+      this.showToast('Por favor ingresa tu ciudad', 'warning');
+      return false;
+    }
+    return true;
+  }
+
+  private validatePaymentData(): boolean {
+    if (!this.paymentData.cardHolder?.trim()) {
+      this.showToast('Por favor ingresa el titular de la tarjeta', 'warning');
+      return false;
+    }
+    if (!this.paymentData.cardNumber?.replace(/\s/g, '').match(/^\d{13,19}$/)) {
+      this.showToast('Por favor ingresa un número de tarjeta válido', 'warning');
+      return false;
+    }
+    if (!this.paymentData.expiryDate?.match(/^\d{2}\/\d{2}$/)) {
+      this.showToast('Por favor usa el formato MM/AA', 'warning');
+      return false;
+    }
+    if (!this.paymentData.cvv?.match(/^\d{3,4}$/)) {
+      this.showToast('Por favor ingresa un CVV válido', 'warning');
+      return false;
+    }
+    return true;
+  }
+
+  async finalizeOrder() {
     this.placingOrder = true;
 
     try {
-      // Obtener el usuario actual
       const user = this.authService.getCurrentUser();
       if (!user) {
         throw new Error('Usuario no autenticado');
       }
 
-      // Buscar el customer asociado al usuario
       const customers = await this.apiService.getCustomers().toPromise();
-      // Buscar por userId o por user.login (el backend devuelve el objeto user anidado)
       let customerId = customers?.find(c => c.userId === user.id || c.user?.login === user.login)?.id;
 
-      // Si no existe, crear el customer
       if (!customerId) {
-        // Ajustar email para cumplir con validación del backend (requiere dominio con punto)
-        let email = user.email;
+        let email = this.shippingData.email;
         if (email === 'admin@localhost' || email === 'user@localhost') {
           email = email.replace('@localhost', '@localhost.com');
         }
         
         const newCustomer = await this.apiService.createCustomer({
-          firstName: user.firstName || 'Usuario',
-          lastName: user.lastName || 'App',
+          firstName: this.shippingData.firstName,
+          lastName: this.shippingData.lastName,
           email: email,
-          phone: '0000000000',
-          addressLine1: 'Dirección no especificada',
-          city: 'Ciudad',
-          country: 'Argentina',
+          phone: this.shippingData.phone,
+          addressLine1: this.shippingData.addressLine1,
+          city: this.shippingData.city,
+          country: this.shippingData.country,
           gender: 'OTHER',
           userId: user.id
         }).toPromise();
@@ -227,7 +330,6 @@ export class CartPage implements OnInit {
         throw new Error('No se pudo crear el cliente');
       }
 
-      // Crear la orden
       const order: ProductOrder = {
         placedDate: new Date().toISOString(),
         status: 'PENDING',
@@ -241,7 +343,6 @@ export class CartPage implements OnInit {
         throw new Error('No se pudo crear la orden');
       }
 
-      // Crear los items de la orden
       for (const item of this.cartItems) {
         if (item.product.id) {
           const orderItem: OrderItem = {
@@ -256,12 +357,22 @@ export class CartPage implements OnInit {
         }
       }
 
-      // Limpiar el carrito
+      // Guardar datos de confirmación
+      this.confirmationData = {
+        orderId: createdOrder.id,
+        orderCode: createdOrder.code,
+        date: new Date(),
+        shippingData: this.shippingData,
+        shippingMethod: this.selectedShipping,
+        items: this.cartItems,
+        subtotal: this.cartTotal,
+        shippingCost: this.shippingCost,
+        total: this.cartTotal + this.shippingCost
+      };
+
       await this.cartService.clearCart();
-      
       this.placingOrder = false;
-      await this.showToast('¡Pedido realizado exitosamente!', 'success');
-      this.router.navigate(['/products']);
+      this.checkoutStep = 'confirmation';
 
     } catch (error) {
       console.error('Error al realizar pedido:', error);
@@ -270,8 +381,49 @@ export class CartPage implements OnInit {
     }
   }
 
-  goBack() {
+  continueShopping() {
+    this.checkoutStep = 'cart';
+    this.cartItems = [];
+    this.cartTotal = 0;
+    this.resetCheckout();
     this.router.navigate(['/products']);
+  }
+
+  private resetCheckout() {
+    this.shippingData = {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      addressLine1: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'Argentina'
+    };
+    this.paymentData = {
+      cardHolder: '',
+      cardNumber: '',
+      expiryDate: '',
+      cvv: ''
+    };
+  }
+
+  goBack() {
+    if (this.checkoutStep === 'cart') {
+      this.router.navigate(['/products']);
+    } else {
+      this.goToPreviousStep();
+    }
+  }
+
+  getProgressPercentage(): number {
+    const steps = { 'cart': 25, 'shipping': 50, 'payment': 75, 'confirmation': 100 };
+    return steps[this.checkoutStep] || 0;
+  }
+
+  getOrderTotal(): number {
+    return this.cartTotal + this.shippingCost;
   }
 
   formatPrice(price: number): string {

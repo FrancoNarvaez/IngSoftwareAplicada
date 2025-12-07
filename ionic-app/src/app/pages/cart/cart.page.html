@@ -5,119 +5,514 @@
         <ion-icon name="arrow-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Carrito de Compras</ion-title>
+    <ion-title *ngIf="checkoutStep === 'cart'">Carrito de Compras</ion-title>
+    <ion-title *ngIf="checkoutStep === 'shipping'">Envío</ion-title>
+    <ion-title *ngIf="checkoutStep === 'payment'">Pago</ion-title>
+    <ion-title *ngIf="checkoutStep === 'confirmation'">Confirmación</ion-title>
   </ion-toolbar>
+  
+  <!-- Progress Bar -->
+  <ion-progress-bar 
+    *ngIf="checkoutStep !== 'confirmation'"
+    [value]="getProgressPercentage() / 100" 
+    color="success">
+  </ion-progress-bar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div *ngIf="cartItems.length === 0 && !loading" class="empty-cart">
-    <ion-icon name="cart-outline" size="large" color="medium"></ion-icon>
-    <ion-text color="medium">
-      <h2>Tu carrito está vacío</h2>
-      <p>Agrega productos para comenzar tu compra</p>
-    </ion-text>
-    <ion-button (click)="goBack()" expand="block" class="ion-margin-top">
-      Ir a productos
-    </ion-button>
+  <!-- STEP 1: CARRITO -->
+  <div *ngIf="checkoutStep === 'cart'">
+    <!-- Empty Cart -->
+    <div *ngIf="cartItems.length === 0" class="empty-cart">
+      <ion-icon name="cart-outline" size="large" color="medium"></ion-icon>
+      <ion-text color="medium">
+        <h2>Tu carrito está vacío</h2>
+        <p>Agrega productos para comenzar tu compra</p>
+      </ion-text>
+      <ion-button (click)="goBack()" expand="block" class="ion-margin-top">
+        <ion-icon name="home-outline" slot="start"></ion-icon>
+        Ir a productos
+      </ion-button>
+    </div>
+
+    <!-- Cart Items -->
+    <div *ngIf="cartItems.length > 0" class="cart-container">
+      <ion-list class="cart-items-list">
+        <ion-item *ngFor="let item of cartItems; let i = index" class="cart-item">
+          <ion-thumbnail slot="start" class="product-thumb">
+            <img 
+              *ngIf="item.product.image" 
+              [src]="'data:' + item.product.imageContentType + ';base64,' + item.product.image"
+              [alt]="item.product.name"
+              class="product-image"
+            />
+            <div *ngIf="!item.product.image" class="no-image-thumb">
+              <ion-text color="medium">?</ion-text>
+            </div>
+          </ion-thumbnail>
+
+          <ion-label class="product-label">
+            <h2 class="product-name">{{ item.product.name }}</h2>
+            <p class="product-price">{{ formatPrice(item.product.price) }} c/u</p>
+          </ion-label>
+
+          <div slot="end" class="quantity-section">
+            <div class="quantity-controls">
+              <ion-button 
+                size="small" 
+                fill="clear" 
+                (click)="decreaseQuantity(item)"
+                [disabled]="item.quantity <= 1 || placingOrder"
+                class="qty-btn"
+              >
+                <ion-icon name="remove-outline"></ion-icon>
+              </ion-button>
+
+              <span class="qty-display">{{ item.quantity }}</span>
+
+              <ion-button 
+                size="small" 
+                fill="clear" 
+                (click)="increaseQuantity(item)"
+                [disabled]="placingOrder"
+                class="qty-btn"
+              >
+                <ion-icon name="add-outline"></ion-icon>
+              </ion-button>
+
+              <ion-button 
+                size="small" 
+                fill="clear" 
+                color="danger" 
+                (click)="removeItem(item)"
+                [disabled]="placingOrder"
+                class="remove-btn"
+              >
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+            <p class="subtotal">{{ formatPrice(item.product.price * item.quantity) }}</p>
+          </div>
+        </ion-item>
+      </ion-list>
+
+      <!-- Summary Card -->
+      <div class="checkout-summary">
+        <ion-card class="summary-card">
+          <ion-card-header>
+            <ion-card-title>Resumen de Compra</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content class="summary-content">
+            <div class="summary-row">
+              <span>Subtotal ({{ cartItems.length }} producto{{ cartItems.length !== 1 ? 's' : '' }})</span>
+              <span class="amount">{{ formatPrice(cartTotal) }}</span>
+            </div>
+
+            <div class="summary-row">
+              <span>Envío</span>
+              <span class="amount">A calcular</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="summary-row total-row">
+              <span><strong>Total Estimado</strong></span>
+              <span class="total-amount"><strong>{{ formatPrice(cartTotal) }}</strong></span>
+            </div>
+
+            <ion-button 
+              expand="block" 
+              color="success"
+              size="large"
+              (click)="proceedToCheckout()"
+              [disabled]="placingOrder"
+              class="checkout-btn"
+            >
+              <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+              Proceder al Checkout
+            </ion-button>
+
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              color="danger" 
+              (click)="clearCart()"
+              [disabled]="placingOrder"
+              class="clear-btn"
+            >
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
+              Vaciar Carrito
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
   </div>
 
-  <div *ngIf="cartItems.length > 0">
-    <ion-list>
-      <ion-item *ngFor="let item of cartItems">
-        <ion-thumbnail slot="start">
-          <img 
-            *ngIf="item.product.image" 
-            [src]="'data:' + item.product.imageContentType + ';base64,' + item.product.image"
-            [alt]="item.product.name"
-          />
-          <div *ngIf="!item.product.image" class="no-image-thumb">
-            <ion-text color="medium">?</ion-text>
-          </div>
-        </ion-thumbnail>
-
-        <ion-label>
-          <h2>{{ item.product.name }}</h2>
-          <p>{{ formatPrice(item.product.price) }} c/u</p>
-          <p>
-            <strong>Subtotal: {{ formatPrice(item.product.price * item.quantity) }}</strong>
-          </p>
-        </ion-label>
-
-        <div slot="end" class="quantity-controls">
-          <ion-button 
-            size="small" 
-            fill="clear" 
-            (click)="decreaseQuantity(item)"
-            [disabled]="item.quantity <= 1 || placingOrder"
-          >
-            <ion-icon name="remove-outline"></ion-icon>
-          </ion-button>
-
-          <ion-note>{{ item.quantity }}</ion-note>
-
-          <ion-button 
-            size="small" 
-            fill="clear" 
-            (click)="increaseQuantity(item)"
-            [disabled]="placingOrder"
-          >
-            <ion-icon name="add-outline"></ion-icon>
-          </ion-button>
-
-          <ion-button 
-            size="small" 
-            fill="clear" 
-            color="danger" 
-            (click)="removeItem(item)"
-            [disabled]="placingOrder"
-          >
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
-    </ion-list>
-
-    <ion-card>
+  <!-- STEP 2: ENVÍO -->
+  <div *ngIf="checkoutStep === 'shipping'" class="checkout-step">
+    <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-title>Resumen del Pedido</ion-card-title>
+        <ion-card-title>Información de Envío</ion-card-title>
+        <p class="step-subtitle">Proporciona tu dirección de entrega</p>
       </ion-card-header>
 
       <ion-card-content>
-        <div class="summary-row">
-          <ion-text>Productos ({{ cartItems.length }})</ion-text>
-          <ion-text>{{ formatPrice(cartTotal) }}</ion-text>
-        </div>
+        <form>
+          <!-- Nombre y Apellido -->
+          <div class="form-row">
+            <div class="form-group">
+              <ion-label position="stacked">Nombre</ion-label>
+              <ion-input 
+                [(ngModel)]="shippingData.firstName"
+                name="firstName"
+                placeholder="Tu nombre"
+                type="text"
+                class="form-input"
+              ></ion-input>
+            </div>
+            <div class="form-group">
+              <ion-label position="stacked">Apellido</ion-label>
+              <ion-input 
+                [(ngModel)]="shippingData.lastName"
+                name="lastName"
+                placeholder="Tu apellido"
+                type="text"
+                class="form-input"
+              ></ion-input>
+            </div>
+          </div>
 
-        <div class="summary-row total">
-          <ion-text>
-            <strong>Total</strong>
-          </ion-text>
-          <ion-text color="primary">
-            <strong>{{ formatPrice(cartTotal) }}</strong>
-          </ion-text>
-        </div>
+          <!-- Email y Teléfono -->
+          <div class="form-row">
+            <div class="form-group">
+              <ion-label position="stacked">Email</ion-label>
+              <ion-input 
+                [(ngModel)]="shippingData.email"
+                name="email"
+                placeholder="tu@email.com"
+                type="email"
+                class="form-input"
+              ></ion-input>
+            </div>
+            <div class="form-group">
+              <ion-label position="stacked">Teléfono</ion-label>
+              <ion-input 
+                [(ngModel)]="shippingData.phone"
+                name="phone"
+                placeholder="+54 9 11 xxxx-xxxx"
+                type="tel"
+                class="form-input"
+              ></ion-input>
+            </div>
+          </div>
 
-        <ion-button 
-          expand="block" 
-          color="success" 
-          (click)="checkout()"
-          [disabled]="placingOrder"
-          class="ion-margin-top"
-        >
-          <ion-spinner *ngIf="placingOrder" name="crescent"></ion-spinner>
-          <span *ngIf="!placingOrder">Realizar Pedido</span>
-        </ion-button>
+          <!-- Dirección -->
+          <div class="form-group full-width">
+            <ion-label position="stacked">Dirección</ion-label>
+            <ion-input 
+              [(ngModel)]="shippingData.addressLine1"
+              name="address"
+              placeholder="Calle y número"
+              type="text"
+              class="form-input"
+            ></ion-input>
+          </div>
 
-        <ion-button 
-          expand="block" 
-          fill="outline" 
-          color="danger" 
-          (click)="clearCart()"
-          [disabled]="placingOrder"
-        >
-          Vaciar Carrito
-        </ion-button>
+          <!-- Ciudad y Provincia -->
+          <div class="form-row">
+            <div class="form-group">
+              <ion-label position="stacked">Ciudad</ion-label>
+              <ion-input 
+                [(ngModel)]="shippingData.city"
+                name="city"
+                placeholder="Tu ciudad"
+                type="text"
+                class="form-input"
+              ></ion-input>
+            </div>
+            <div class="form-group">
+              <ion-label position="stacked">Provincia</ion-label>
+              <ion-input 
+                [(ngModel)]="shippingData.state"
+                name="state"
+                placeholder="Provincia/Estado"
+                type="text"
+                class="form-input"
+              ></ion-input>
+            </div>
+          </div>
+
+          <!-- Métodos de Envío -->
+          <div class="shipping-methods">
+            <h3 class="methods-title">Método de Envío</h3>
+            <div 
+              *ngFor="let method of shippingMethods" 
+              class="method-option"
+              [class.selected]="method.selected"
+              (click)="selectShippingMethod(method)"
+            >
+              <div class="method-header">
+                <span class="method-name">{{ method.name }}</span>
+                <span class="method-cost">{{ formatPrice(method.cost) }}</span>
+              </div>
+            </div>
+          </div>
+        </form>
       </ion-card-content>
     </ion-card>
+
+    <!-- Navigation Buttons -->
+    <div class="button-group">
+      <ion-button 
+        expand="block" 
+        fill="outline"
+        (click)="goBack()"
+      >
+        <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+        Volver al Carrito
+      </ion-button>
+      <ion-button 
+        expand="block" 
+        color="success"
+        (click)="proceedToPayment()"
+      >
+        <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+        Continuar al Pago
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PAGO -->
+  <div *ngIf="checkoutStep === 'payment'" class="checkout-step">
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>Información de Pago</ion-card-title>
+        <p class="step-subtitle">Completa los datos de tu tarjeta</p>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form>
+          <!-- Titular de la Tarjeta -->
+          <div class="form-group full-width">
+            <ion-label position="stacked">Titular de la Tarjeta</ion-label>
+            <ion-input 
+              [(ngModel)]="paymentData.cardHolder"
+              name="cardHolder"
+              placeholder="Nombre en la tarjeta"
+              type="text"
+              class="form-input"
+            ></ion-input>
+          </div>
+
+          <!-- Número de Tarjeta -->
+          <div class="form-group full-width">
+            <ion-label position="stacked">Número de Tarjeta</ion-label>
+            <ion-input 
+              [(ngModel)]="paymentData.cardNumber"
+              name="cardNumber"
+              placeholder="1234 5678 9012 3456"
+              type="tel"
+              class="form-input"
+              maxlength="23"
+            ></ion-input>
+          </div>
+
+          <!-- Vencimiento y CVV -->
+          <div class="form-row">
+            <div class="form-group">
+              <ion-label position="stacked">Vencimiento (MM/AA)</ion-label>
+              <ion-input 
+                [(ngModel)]="paymentData.expiryDate"
+                name="expiryDate"
+                placeholder="12/25"
+                type="text"
+                class="form-input"
+                maxlength="5"
+              ></ion-input>
+            </div>
+            <div class="form-group">
+              <ion-label position="stacked">CVV</ion-label>
+              <ion-input 
+                [(ngModel)]="paymentData.cvv"
+                name="cvv"
+                placeholder="123"
+                type="password"
+                class="form-input"
+                maxlength="4"
+              ></ion-input>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="order-summary">
+            <h4>Resumen del Pedido</h4>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>{{ formatPrice(cartTotal) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Envío ({{ selectedShipping.name }})</span>
+              <span>{{ formatPrice(selectedShipping.cost) }}</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row total-row">
+              <span><strong>Total a Pagar</strong></span>
+              <span class="total-amount"><strong>{{ formatPrice(getOrderTotal()) }}</strong></span>
+            </div>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Navigation Buttons -->
+    <div class="button-group">
+      <ion-button 
+        expand="block" 
+        fill="outline"
+        (click)="goToPreviousStep()"
+      >
+        <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+        Volver al Envío
+      </ion-button>
+      <ion-button 
+        expand="block" 
+        color="success"
+        (click)="proceedToConfirmation()"
+        [disabled]="placingOrder"
+      >
+        <ion-icon name="card-outline" slot="start"></ion-icon>
+        Confirmar Pago
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONFIRMACIÓN -->
+  <div *ngIf="checkoutStep === 'confirmation'" class="confirmation-container">
+    <div class="confirmation-success">
+      <div class="success-icon-wrapper">
+        <ion-icon name="checkmark-circle-outline" class="success-icon"></ion-icon>
+      </div>
+
+      <h1 class="success-title">¡Pedido Confirmado!</h1>
+      <p class="success-message">Tu pedido ha sido procesado exitosamente</p>
+
+      <!-- Order Details Card -->
+      <ion-card class="confirmation-card">
+        <ion-card-header>
+          <ion-card-title>Detalles del Pedido</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <div class="detail-row">
+            <span class="label">Número de Orden:</span>
+            <span class="value order-code">{{ confirmationData?.orderCode }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Fecha:</span>
+            <span class="value">{{ confirmationData?.date | date:'short' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Estado:</span>
+            <span class="value status-pending">Pendiente de Procesamiento</span>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Shipping Info Card -->
+      <ion-card class="confirmation-card">
+        <ion-card-header>
+          <ion-card-title>Información de Envío</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <p><strong>{{ confirmationData?.shippingData?.firstName }} {{ confirmationData?.shippingData?.lastName }}</strong></p>
+          <p>{{ confirmationData?.shippingData?.addressLine1 }}</p>
+          <p>{{ confirmationData?.shippingData?.city }}, {{ confirmationData?.shippingData?.state }}</p>
+          <p>{{ confirmationData?.shippingData?.country }}</p>
+          <p class="email">{{ confirmationData?.shippingData?.email }}</p>
+          <p class="phone">{{ confirmationData?.shippingData?.phone }}</p>
+
+          <div class="shipping-method">
+            <ion-icon name="checkmark-outline" color="success"></ion-icon>
+            <span>{{ confirmationData?.shippingMethod?.name }}</span>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Items Summary Card -->
+      <ion-card class="confirmation-card">
+        <ion-card-header>
+          <ion-card-title>Productos Pedidos</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <ion-list class="confirmation-items">
+            <ion-item *ngFor="let item of confirmationData?.items" class="confirmation-item">
+              <ion-thumbnail slot="start" class="confirmation-thumb">
+                <img 
+                  *ngIf="item.product.image" 
+                  [src]="'data:' + item.product.imageContentType + ';base64,' + item.product.image"
+                  [alt]="item.product.name"
+                />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>{{ item.product.name }}</h3>
+                <p>Cantidad: {{ item.quantity }}</p>
+                <p class="item-price">{{ formatPrice(item.product.price * item.quantity) }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Total Card -->
+      <ion-card class="total-card">
+        <ion-card-content>
+          <div class="final-summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>{{ formatPrice(confirmationData?.subtotal) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Envío</span>
+              <span>{{ formatPrice(confirmationData?.shippingCost) }}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="summary-row final-total">
+              <strong>Total Pagado</strong>
+              <strong class="amount">{{ formatPrice(confirmationData?.total) }}</strong>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Next Steps Info -->
+      <ion-card class="info-card">
+        <ion-card-content>
+          <h4>¿Qué sigue?</h4>
+          <ul class="next-steps">
+            <li>Recibirás un email de confirmación en los próximos minutos</li>
+            <li>Podrás rastrear tu pedido en tu cuenta</li>
+            <li>Te notificaremos cuando tu pedido sea enviado</li>
+            <li>El tiempo de entrega es de 5-7 días hábiles</li>
+          </ul>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Action Buttons -->
+      <div class="button-group confirmation-buttons">
+        <ion-button 
+          expand="block" 
+          color="primary"
+          size="large"
+          (click)="continueShopping()"
+        >
+          <ion-icon name="home-outline" slot="start"></ion-icon>
+          Volver a Tienda
+        </ion-button>
+      </div>
+    </div>
   </div>
 </ion-content>
