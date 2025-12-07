@@ -75,7 +75,10 @@ describe('Test Login Ionic App', () => {
     // Interceptar la petición de login
     cy.intercept('POST', '/api/authenticate').as('loginRequest');
     
+    // Navegar a la home y luego provocar redirección a login
     cy.visit(IONIC_URL);
+    cy.contains('Explorar Productos').click();
+    cy.url().should('include', '/login');
     cy.wait(2000);
     
     cy.log('Buscando campos de login...');
