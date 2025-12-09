@@ -13,7 +13,7 @@ describe('Flujo Completo de Compra', () => {
     cy.get('ion-input[name="username"] input').type('admin');
     cy.get('ion-input[name="password"] input').type('admin');
     cy.get('ion-button[type="submit"]').click();
-    
+
     // Esperar a que redirija a productos (comportamiento por defecto del login)
     cy.url().should('include', '/products');
     cy.contains('Productos').should('be.visible');
@@ -21,7 +21,7 @@ describe('Flujo Completo de Compra', () => {
     // 2. Agregar 3 items (ya estamos en la página de productos)
     cy.log('🛍️ Agregando productos...');
     // cy.visit(`${IONIC_URL}/products`); // No es necesario si ya estamos ahí
-    
+
     // Esperar a que carguen los productos
     cy.get('app-product-card').should('have.length.at.least', 3);
 
@@ -40,7 +40,7 @@ describe('Flujo Completo de Compra', () => {
     cy.log('🛒 Yendo al carrito...');
     cy.get('ion-button[routerLink="/cart"]').click();
     cy.url().should('include', '/cart');
-    
+
     // Verificar que hay 3 items en la lista
     cy.get('ion-item.cart-item').should('have.length', 3);
 
@@ -50,7 +50,7 @@ describe('Flujo Completo de Compra', () => {
     // 5. Completar Envío (Paso 2 -> 3)
     cy.log('🚚 Completando envío...');
     cy.contains('Información de Envío').should('be.visible');
-    
+
     // Llenar formulario de envío
     cy.get('ion-input[name="firstName"] input').clear().type('Juan');
     cy.get('ion-input[name="lastName"] input').clear().type('Perez');
@@ -82,20 +82,20 @@ describe('Flujo Completo de Compra', () => {
     // 7. Verificar Confirmación
     cy.log('✅ Verificando confirmación...');
     cy.contains('¡Pedido Confirmado!', { timeout: 10000 }).should('be.visible');
-    
+
     // Verificar que aparecen los items en la confirmación
     cy.get('.confirmation-items ion-item').should('have.length', 3);
-    
+
     // Verificar que el total no es cero
     cy.get('.final-total .amount').should('not.contain', '$0,00');
 
     // 8. Verificar que el carrito se vació al salir
     cy.log('🧹 Verificando limpieza del carrito...');
     cy.contains('Volver a Tienda').click();
-    
+
     // Debería volver a productos
     cy.url().should('include', '/products');
-    
+
     // El badge del carrito NO debería existir o debería ser 0 (dependiendo de la implementación, usamos *ngIf > 0 así que no debería existir)
     cy.get('ion-button[routerLink="/cart"] ion-badge').should('not.exist');
   });

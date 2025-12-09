@@ -1,18 +1,6 @@
-import {
-  entityConfirmDeleteButtonSelector,
-  entityCreateButtonSelector,
-  entityCreateCancelButtonSelector,
-  entityCreateSaveButtonSelector,
-  entityDeleteButtonSelector,
-  entityDetailsBackButtonSelector,
-  entityDetailsButtonSelector,
-  entityEditButtonSelector,
-  entityTableSelector,
-} from '../../support/entity';
+import { entityConfirmDeleteButtonSelector } from '../../support/entity';
 
 describe('Shipment e2e test', () => {
-  const shipmentPageUrl = '/shipment';
-  const shipmentPageUrlPattern = new RegExp('/shipment(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
   const shipmentSample = { date: '2025-11-30T08:41:00.195Z' };

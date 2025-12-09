@@ -5,7 +5,10 @@ describe('Checkout flow', () => {
     cy.visit('/');
     cy.contains('Products').click({ force: true });
     // Click first "Add to cart" button if present
-    cy.get('button').contains(/add to cart/i).first().click({ force: true });
+    cy.get('button')
+      .contains(/add to cart/i)
+      .first()
+      .click({ force: true });
     cy.contains(/cart/i).click({ force: true });
     cy.url().should('include', '/cart');
     cy.contains(/checkout/i).click({ force: true });

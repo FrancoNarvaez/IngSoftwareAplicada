@@ -176,7 +176,7 @@ describe('Product e2e test', () => {
       cy.setFieldImageAsBytesOfEntity('image', 'integration-test.png', 'image/png');
 
       // since cypress clicks submit too fast before the blob fields are validated
-      cy.wait(200); // eslint-disable-line cypress/no-unnecessary-waiting
+      cy.wait(200);
       cy.get(entityCreateSaveButtonSelector).click();
 
       cy.wait('@postEntityRequest').then(({ response }) => {

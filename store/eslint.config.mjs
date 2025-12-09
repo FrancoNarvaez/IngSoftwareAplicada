@@ -109,6 +109,10 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'cypress/no-unnecessary-waiting': 'off',
+      'cypress/unsafe-to-chain-command': 'off',
     },
   },
   // jhipster-needle-eslint-add-config - JHipster will add additional config here

@@ -139,7 +139,7 @@ describe('Invoice e2e test', () => {
           }).then(({ status, body }) => {
             expect(status).to.equal(200);
             expect(body).to.be.an('array');
-            const foundPaid = body.find((inv) => inv.id === paid.id);
+            const foundPaid = body.find(inv => inv.id === paid.id);
             expect(foundPaid).to.exist;
             expect(foundPaid.status).to.equal('PAID');
           });
