@@ -28,4 +28,13 @@ liberar_puerto 8080 "Backend/Spring Boot"
 # Liberar puerto del Frontend (Ionic/Angular)
 liberar_puerto 4200 "Frontend/Ionic"
 
+# Liberar puertos del Stack ELK
+liberar_puerto 9200 "Elasticsearch"
+liberar_puerto 5601 "Kibana"
+liberar_puerto 5044 "Logstash"
+
+# Liberar puertos de Bases de Datos
+liberar_puerto 3306 "MySQL"
+liberar_puerto 27017 "MongoDB"
+
 echo "🚀 Listo para arrancar."
