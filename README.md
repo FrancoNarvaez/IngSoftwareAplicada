@@ -26,19 +26,46 @@ Aplicación de comercio electrónico moderna desarrollada para la asignatura **I
 
 ## ⚙️ Instalación y Ejecución
 
-### 1. Configuración de Base de Datos
-El proyecto está configurado para conectar a una instancia local de MySQL.
-- **Base de datos**: `store`
-- **Usuario**: `root`
-- **Contraseña**: `(vacía)`
-- **Puerto**: `3306`
-
-Asegúrate de que el servicio MySQL esté activo:
+### Quick Start con Docker Compose (Completo)
+Para levantar toda la infraestructura (MySQL, MongoDB, Consul, ELK Stack + Servicios):
 ```bash
-sudo systemctl status mysql
+# Liberar puertos
+bash liberar-puertos.sh
+
+# Iniciar todo con docker-compose
+docker-compose up -d
+```
+Esto levanta:
+- **Consul** (service discovery): http://localhost:8500
+- **MySQL** (store): puerto 3307
+- **MongoDB** (notification): puerto 27017
+- **Store API**: http://localhost:8080/swagger-ui.html
+- **Invoice API**: http://localhost:8081/swagger-ui.html
+- **Notification API**: http://localhost:8082/swagger-ui.html
+- **Elasticsearch**: http://localhost:9200
+- **Kibana**: http://localhost:5601
+- **Logstash**: puerto 5044
+
+Luego levantar frontend:
+```bash
+cd ionic-app
+npm install  # Solo la primera vez
+npm start
+```
+- **URL App**: http://localhost:4200
+
+### Ejecución Local (Sin contenedores para el backend/frontend)
+
+#### 1. Preparar infraestructura
+```bash
+# Liberar puertos
+bash liberar-puertos.sh
+
+# Levantar solo bases de datos y ELK (sin servicios Java)
+docker-compose up -d consul mysql-store mysql-invoice mongodb-notification elasticsearch logstash kibana
 ```
 
-### 2. Iniciar Backend (Store Service)
+#### 2. Iniciar Backend (Store Service)
 ```bash
 cd store
 ./mvnw spring-boot:run
@@ -46,13 +73,27 @@ cd store
 - **URL API**: `http://localhost:8080/api`
 - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
 
-### 3. Iniciar Frontend (Ionic App)
+#### 3. Iniciar Frontend (Ionic App)
 ```bash
 cd ionic-app
 npm install  # Solo la primera vez
 npm start
 ```
 - **URL App**: `http://localhost:4200`
+
+#### 4. Verificar Logs en ELK
+```bash
+# Hacer una request para generar logs
+curl http://localhost:8080/management/health
+
+# Ver logs en Elasticsearch
+curl 'http://localhost:9200/app-logs-*/_search?size=3'
+
+# Abrir Kibana en el navegador
+# http://localhost:5601
+# - Crear Index Pattern: app-logs-*
+# - Ir a Discover para ver eventos en tiempo real
+```
 
 ## ✨ Funcionalidades Principales
 
@@ -120,25 +161,46 @@ npm run e2e
 
 El stack incluye **Elasticsearch + Logstash + Kibana** para centralizar los logs de los microservicios (`store`, `invoice`, `notification`).
 
-### Arranque rápido del stack de logs
-```bash
-docker-compose up -d elasticsearch logstash kibana
-```
-- Elasticsearch: http://localhost:9200
-- Kibana: http://localhost:5601
-- Logstash (TCP): puerto 5044
+### Componentes
+- **Elasticsearch** (http://localhost:9200): Motor de búsqueda y almacenamiento de logs
+- **Logstash** (puerto 5044 TCP): Ingesta de logs desde las aplicaciones Java
+- **Kibana** (http://localhost:5601): Visualización y análisis de logs
 
-Los servicios Java ya están configurados para enviar logs en JSON hacia Logstash (`logging.logstash.enabled=true`, host `logstash`, puerto `5044`).
+### Configuración Automática
+Los servicios Java ya incluyen:
+- Dependencia: `logstash-logback-encoder` (v8.0)
+- Configuración: `logging.logstash.enabled=true`, host/puerto configurables por perfil
+- Formato: JSON para facilitar parsing en Logstash
 
-### Verificación rápida
-1) Genera tráfico (por ejemplo, cualquier petición a `store`).
-2) Revisa que Logstash recibe eventos:
+### Testing Automatizado
+Ejecutar prueba de humo (smoke test) del stack ELK:
 ```bash
-docker logs logstash | head
+# Levanta ELK, envía log sintético y valida ingesta en Elasticsearch
+./scripts/test-elk-logging.sh
+
+# Para dejar ELK corriendo después del test
+KEEP_ELK=1 ./scripts/test-elk-logging.sh
 ```
-3) Busca un log en Elasticsearch:
+
+### Verificación Manual
+1) Generar tráfico:
 ```bash
-curl 'http://localhost:9200/app-logs-*/_search?size=1'
+curl http://localhost:8080/management/health
+curl http://localhost:8080/api/products
 ```
-4) En Kibana, crea un Index Pattern `app-logs-*` y valida los eventos en Discover.
+
+2) Revisar recepción en Logstash:
+```bash
+docker logs logstash | tail -20
+```
+
+3) Buscar logs en Elasticsearch:
+```bash
+curl 'http://localhost:9200/app-logs-*/_search?q=logger_name:com.jhipster&size=5'
+```
+
+4) Visualizar en Kibana:
+- Abrir http://localhost:5601
+- Crear Index Pattern: `app-logs-*`
+- Ir a Discover para ver eventos en tiempo real
 
