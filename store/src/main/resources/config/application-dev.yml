@@ -114,11 +114,11 @@ jhipster:
   mail: # specific JHipster mail property, for standard properties see MailProperties
     base-url: http://127.0.0.1:8080
   logging:
-    use-json-format: false # By default, logs are not in Json format
+    use-json-format: true # Enable JSON to ship clean events to Logstash
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
-      enabled: false
-      host: localhost
-      port: 5000
+      enabled: true
+      host: localhost  # Use 'localhost' when running app on host, 'logstash' when in Docker
+      port: 5044
       ring-buffer-size: 512
 # ===================================================================
 # Application specific properties

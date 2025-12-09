@@ -116,3 +116,29 @@ npm run e2e
 - **entity/**: CRUD de entidades.
 - **test-login-ionic.cy.ts**: Pruebas específicas de integración con el frontend Ionic.
 
+## 📊 Observabilidad (ELK)
+
+El stack incluye **Elasticsearch + Logstash + Kibana** para centralizar los logs de los microservicios (`store`, `invoice`, `notification`).
+
+### Arranque rápido del stack de logs
+```bash
+docker-compose up -d elasticsearch logstash kibana
+```
+- Elasticsearch: http://localhost:9200
+- Kibana: http://localhost:5601
+- Logstash (TCP): puerto 5044
+
+Los servicios Java ya están configurados para enviar logs en JSON hacia Logstash (`logging.logstash.enabled=true`, host `logstash`, puerto `5044`).
+
+### Verificación rápida
+1) Genera tráfico (por ejemplo, cualquier petición a `store`).
+2) Revisa que Logstash recibe eventos:
+```bash
+docker logs logstash | head
+```
+3) Busca un log en Elasticsearch:
+```bash
+curl 'http://localhost:9200/app-logs-*/_search?size=1'
+```
+4) En Kibana, crea un Index Pattern `app-logs-*` y valida los eventos en Discover.
+

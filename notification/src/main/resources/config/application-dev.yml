@@ -76,11 +76,11 @@ jhipster:
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   logging:
-    use-json-format: false # By default, logs are not in Json format
+    use-json-format: true # Enable JSON to ship clean events to Logstash
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
-      enabled: false
-      host: localhost
-      port: 5000
+      enabled: true
+      host: logstash
+      port: 5044
       ring-buffer-size: 512
 # ===================================================================
 # Application specific properties
