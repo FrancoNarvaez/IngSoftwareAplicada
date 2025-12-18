@@ -84,6 +84,8 @@ public class StoreApp {
         } catch (UnknownHostException e) {
             LOG.warn("The host name could not be determined, using `localhost` as fallback");
         }
+        
+        // Log de inicio enriquecido con información del sistema
         LOG.info(
             CRLFLogConverter.CRLF_SAFE_MARKER,
             """
@@ -104,5 +106,43 @@ public class StoreApp {
             contextPath,
             env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles()
         );
+        
+        // Logs enriquecidos de configuración del sistema
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemoryMB = runtime.maxMemory() / 1024 / 1024;
+        long totalMemoryMB = runtime.totalMemory() / 1024 / 1024;
+        int availableProcessors = runtime.availableProcessors();
+        
+        LOG.info("System Configuration - Java Version: {}, Max Memory: {}MB, Total Memory: {}MB, Processors: {}",
+            System.getProperty("java.version"),
+            maxMemoryMB,
+            totalMemoryMB,
+            availableProcessors
+        );
+        
+        // Log de configuración de base de datos
+        String r2dbcUrl = env.getProperty("spring.r2dbc.url");
+        String datasourceUrl = env.getProperty("spring.datasource.url");
+        if (r2dbcUrl != null) {
+            LOG.info("Database Configuration - R2DBC URL: {} (Reactive Driver)", maskPassword(r2dbcUrl));
+        }
+        if (datasourceUrl != null) {
+            LOG.info("Database Configuration - Datasource URL: {}", maskPassword(datasourceUrl));
+        }
+        
+        // Log de configuración de Logstash si está habilitado
+        String logstashEnabled = env.getProperty("logging.logstash.enabled");
+        if ("true".equals(logstashEnabled)) {
+            String logstashHost = env.getProperty("logging.logstash.host");
+            String logstashPort = env.getProperty("logging.logstash.port");
+            LOG.info("Observability - Logstash logging enabled at {}:{}", logstashHost, logstashPort);
+        }
+        
+        LOG.info("Application startup completed successfully - Ready to accept requests");
+    }
+    
+    private static String maskPassword(String url) {
+        if (url == null) return "";
+        return url.replaceAll(":[^:@]+@", ":****@");
     }
 }
