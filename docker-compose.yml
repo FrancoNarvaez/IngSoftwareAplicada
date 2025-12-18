@@ -187,7 +187,7 @@ services:
     environment:
       LS_JAVA_OPTS: "-Xms256m -Xmx256m"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9600/_node/health?pretty"]
+      test: ["CMD", "curl", "-f", "http://localhost:9600/?pretty"]
       interval: 10s
       timeout: 10s
       retries: 30
