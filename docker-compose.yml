@@ -71,6 +71,14 @@ services:
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
       - SPRING_PROFILES_ACTIVE=dev,api-docs
+      # Activar envío de logs a Logstash (JHipster) en contenedor
+      - JHIPSTER_LOGGING_USE_JSON_FORMAT=true
+      - JHIPSTER_LOGGING_LOGSTASH_ENABLED=true
+      - JHIPSTER_LOGGING_LOGSTASH_HOST=logstash
+      - JHIPSTER_LOGGING_LOGSTASH_PORT=5044
+      - JHIPSTER_LOGGING_LOGSTASH_RING_BUFFER_SIZE=512
+      # Refuerzo vía SPRING_APPLICATION_JSON con la ruta correcta 'jhipster.logging'
+      - SPRING_APPLICATION_JSON={"jhipster":{"logging":{"use-json-format":true,"logstash":{"enabled":true,"host":"logstash","port":5044,"ring-buffer-size":512}}}}
       - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
       - SPRING_DOCKER_COMPOSE_ENABLED=false
       - SERVER_PORT=8080

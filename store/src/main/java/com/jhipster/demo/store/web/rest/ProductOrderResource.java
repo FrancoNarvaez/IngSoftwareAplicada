@@ -59,11 +59,11 @@ public class ProductOrderResource {
      */
     @PostMapping("")
     public Mono<ResponseEntity<ProductOrder>> createProductOrder(@Valid @RequestBody ProductOrder productOrder) throws URISyntaxException {
-        LOG.info("Creating new order - Customer: {}, Items count: {}, Total amount: {}, Payment method: {}",
+        LOG.info("Creating new order - Customer: {}, Items count: {}, Status: {}, Code: {}",
             productOrder.getCustomer() != null ? productOrder.getCustomer().getId() : "N/A",
             productOrder.getOrderItems() != null ? productOrder.getOrderItems().size() : 0,
-            productOrder.getTotalPrice(),
-            productOrder.getPaymentMethod()
+            productOrder.getStatus(),
+            productOrder.getCode()
         );
         
         if (productOrder.getId() != null) {
@@ -74,11 +74,11 @@ public class ProductOrderResource {
         return productOrderService
             .save(productOrder)
             .doOnSuccess(result -> {
-                LOG.info("Order created successfully - Order ID: {}, Customer: {}, Status: {}, Total: {}",
+                LOG.info("Order created successfully - Order ID: {}, Customer: {}, Status: {}, Code: {}",
                     result.getId(),
                     result.getCustomer() != null ? result.getCustomer().getId() : "N/A",
                     result.getStatus(),
-                    result.getTotalPrice()
+                    result.getCode()
                 );
             })
             .doOnError(error -> {
