@@ -453,3 +453,16 @@ curl http://localhost:8080/management/health
 **Archivos modificados:** 3 (StoreApp, ProductOrderResource, logstash.conf)  
 **Documentación nueva:** 1 (LOGSTASH_KIBANA_GUIDE.md - 600+ líneas)  
 **Última actualización:** 18 Diciembre 2025
+
+
+***Mis notas***
+### **Queries KQL adicionales para Kibana**
+
+**Ver logs de niveles INFO, WARN, ERROR:**
+```kql
+    logger_name: "com.jhipster.demo.store.*" AND (level: "INFO" OR level: "WARN" OR level: "ERROR")
+```
+**Ver logs relacionados a órdenes:**
+```kql
+    message: ("Application startup" OR "System Configuration" OR "Order created" OR "Order deleted" OR "Database Configuration" OR "Observability")
+```
