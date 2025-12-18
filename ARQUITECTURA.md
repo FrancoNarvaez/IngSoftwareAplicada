@@ -309,7 +309,7 @@ TOTAL:               86 tests PASSED
 **Tipos**:
 - Unit Tests (JUnit 5 + Mockito)
 - Integration Tests (TestContainers)
-- Architecture Tests (ArchUnit)
+
 
 **Coverage**: ~80% (Código core)
 
@@ -323,8 +323,7 @@ Coverage: ~85% (Angular components)
 
 **Tipos**:
 - Unit Tests (Jasmine/Karma)
-- Component Tests (Angular Testing Utilities)
-- Reducer Tests (NgRx/Store)
+
 
 ### **Tests E2E (End-to-End)**
 

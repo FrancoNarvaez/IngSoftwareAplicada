@@ -59,12 +59,35 @@ public class ProductOrderResource {
      */
     @PostMapping("")
     public Mono<ResponseEntity<ProductOrder>> createProductOrder(@Valid @RequestBody ProductOrder productOrder) throws URISyntaxException {
-        LOG.debug("REST request to save ProductOrder : {}", productOrder);
+        LOG.info("Creating new order - Customer: {}, Items count: {}, Total amount: {}, Payment method: {}",
+            productOrder.getCustomer() != null ? productOrder.getCustomer().getId() : "N/A",
+            productOrder.getOrderItems() != null ? productOrder.getOrderItems().size() : 0,
+            productOrder.getTotalPrice(),
+            productOrder.getPaymentMethod()
+        );
+        
         if (productOrder.getId() != null) {
+            LOG.error("Order creation failed - Order already has ID: {}", productOrder.getId());
             throw new BadRequestAlertException("A new productOrder cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        
         return productOrderService
             .save(productOrder)
+            .doOnSuccess(result -> {
+                LOG.info("Order created successfully - Order ID: {}, Customer: {}, Status: {}, Total: {}",
+                    result.getId(),
+                    result.getCustomer() != null ? result.getCustomer().getId() : "N/A",
+                    result.getStatus(),
+                    result.getTotalPrice()
+                );
+            })
+            .doOnError(error -> {
+                LOG.error("Order creation failed - Customer: {}, Error: {}",
+                    productOrder.getCustomer() != null ? productOrder.getCustomer().getId() : "N/A",
+                    error.getMessage(),
+                    error
+                );
+            })
             .map(result -> {
                 try {
                     return ResponseEntity.created(new URI("/api/product-orders/" + result.getId()))
@@ -174,10 +197,21 @@ public class ProductOrderResource {
         ServerHttpRequest request,
         @RequestParam(name = "eagerload", required = false, defaultValue = "true") boolean eagerload
     ) {
-        LOG.debug("REST request to get a page of ProductOrders");
+        LOG.info("Fetching orders - Page: {}, Size: {}, Eager load: {}",
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            eagerload
+        );
+        
         return productOrderService
             .countAll()
             .zipWith(productOrderService.findAll(pageable).collectList())
+            .doOnSuccess(countWithEntities -> {
+                LOG.info("Orders retrieved successfully - Total orders: {}, Page items: {}",
+                    countWithEntities.getT1(),
+                    countWithEntities.getT2().size()
+                );
+            })
             .map(countWithEntities ->
                 ResponseEntity.ok()
                     .headers(
@@ -211,9 +245,16 @@ public class ProductOrderResource {
      */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteProductOrder(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete ProductOrder : {}", id);
+        LOG.info("Deleting order - Order ID: {}", id);
+        
         return productOrderService
             .delete(id)
+            .doOnSuccess(v -> {
+                LOG.info("Order deleted successfully - Order ID: {}", id);
+            })
+            .doOnError(error -> {
+                LOG.error("Order deletion failed - Order ID: {}, Error: {}", id, error.getMessage(), error);
+            })
             .then(
                 Mono.just(
                     ResponseEntity.noContent()
